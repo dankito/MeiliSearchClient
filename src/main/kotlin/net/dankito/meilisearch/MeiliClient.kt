@@ -129,6 +129,12 @@ open class MeiliClient(
     }
 
 
+    suspend fun deleteDocument(indexName: String, documentId: String): TaskResult {
+        val taskInfo = client.index(indexName).deleteDocument(documentId)
+        return waitForTask(taskInfo)
+    }
+
+
     suspend fun waitForTask(taskInfo: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 200) =
         waitForTask(taskInfo.taskUid, timeoutMs, intervalMs)
 
