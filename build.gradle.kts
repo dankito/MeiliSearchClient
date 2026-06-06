@@ -8,6 +8,12 @@ plugins {
 group = "net.dankito.meilisearch"
 version = "1.0.0-SNAPSHOT"
 
+ext["customArtifactId"] = "MeiliSearchClient"
+
+ext["sourceCodeRepositoryBaseUrl"] = "github.com/dankito/MeiliSearchClient"
+
+ext["projectDescription"] = "A client for MeiliSearch with nice Kotlin DSL."
+
 
 kotlin {
     jvmToolchain(17) // Meili SDK requires JDK 17 or newer
@@ -51,4 +57,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+
+if (file("./gradle/scripts/publish-dankito.gradle.kts").exists()) {
+    apply(from = "./gradle/scripts/publish-dankito.gradle.kts")
 }
