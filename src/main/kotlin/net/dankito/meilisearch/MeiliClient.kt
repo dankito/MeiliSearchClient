@@ -135,6 +135,17 @@ open class MeiliClient(
     }
 
 
+    suspend fun compactAllIndices() {
+        client.indexes.results.forEach { index ->
+            waitForTask(index.compact())
+        }
+    }
+
+    suspend fun compactIndex(indexName: String) {
+        waitForTask(client.getIndex(indexName).compact())
+    }
+
+
     suspend fun waitForTask(taskInfo: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 200) =
         waitForTask(taskInfo.taskUid, timeoutMs, intervalMs)
 
