@@ -1,19 +1,31 @@
 package net.dankito.meilisearch
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.meilisearch.sdk.Client
 import com.meilisearch.sdk.Config
+import com.meilisearch.sdk.model.DocumentsQuery
 import com.meilisearch.sdk.model.Task
 import com.meilisearch.sdk.model.TaskInfo
 import com.meilisearch.sdk.model.TaskStatus
 import kotlinx.coroutines.delay
+import net.dankito.meilisearch.model.SearchResults
 import net.dankito.meilisearch.model.TaskFailure
 import net.dankito.meilisearch.model.TaskResult
 import net.dankito.meilisearch.model.TaskSuccess
+import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
 open class MeiliClient(
     meiliHost: String,
     meiliApiKey: String? = null,
+    protected val objectMapper: ObjectMapper = ObjectMapper().apply {
+        registerKotlinModule()
+        findAndRegisterModules()
+
+        disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
 ) {
 
     internal val client = Client(Config(meiliHost, meiliApiKey))
@@ -54,6 +66,48 @@ open class MeiliClient(
 //        )
 //        // Per REST da das Java-SDK Embedder noch nicht vollständig unterstützt:
 //        index.rawSearch("""{"embedders": ${objectMapper.writeValueAsString(embedderSettings)}}""")
+    }
+
+
+
+    fun <T : Any> getDocument(indexName: String, documentId: String, resultClass: KClass<T>): T =
+        client.index(indexName).getDocument(documentId, resultClass.java)
+
+    fun <T : Any> getAllDocuments(indexName: String, resultClass: KClass<T>, fieldsToReturn: Collection<String> = emptyList(),
+                                  filter: Collection<String> = emptyList()): List<T> {
+        var page = 0
+        val batchSize = 1000
+        val result = mutableListOf<T>()
+
+        var batch = getDocuments(indexName, resultClass, page * batchSize, batchSize, fieldsToReturn, filter)
+        result.addAll(batch.results)
+
+        while (batch.results.size == batchSize) {
+            page += 1
+            batch = getDocuments(indexName, resultClass, page * batchSize, batchSize, fieldsToReturn, filter)
+            result.addAll(batch.results)
+        }
+
+        return result
+    }
+
+    fun <T : Any> getDocuments(indexName: String, resultClass: KClass<T>, offset: Int = 0, limit: Int = 20,
+                               fieldsToReturn: Collection<String> = emptyList(), filter: Collection<String> = emptyList()): SearchResults<T> {
+        val query = DocumentsQuery().setOffset(offset).setLimit(limit).apply {
+            if (fieldsToReturn.isNotEmpty()) {
+                setFields(fieldsToReturn.toTypedArray())
+            }
+            if (filter.isNotEmpty()) {
+                setFilter(filter.toTypedArray())
+            }
+        }
+
+        // TODO: cache index and type
+        val rawDocuments = client.index(indexName).getRawDocuments(query)
+
+        val type = objectMapper.typeFactory.constructParametricType(SearchResults::class.java, resultClass.java)
+
+        return objectMapper.readValue(rawDocuments, type) as SearchResults<T>
     }
 
 

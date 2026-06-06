@@ -31,12 +31,17 @@ repositories {
 
 
 val meiliVersion: String = "0.20.1"
+// do not use a newer version, it would require Kotlin > 2.0
+val jacksonVersion: String = "2.20.2"
 val coroutinesVersion: String = "1.9.0"
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     implementation("com.meilisearch.sdk:meilisearch-java:$meiliVersion")
+
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
 
 
     testImplementation(kotlin("test"))
