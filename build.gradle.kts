@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
-    kotlin("jvm") version "2.0.21"
+    // Meili SDK's OkHttp dependency requires at least Kotlin 2.2
+    kotlin("jvm") version "2.2.21"
 }
 
 group = "net.dankito.meilisearch"
@@ -9,7 +10,7 @@ version = "1.0.0-SNAPSHOT"
 
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17) // Meili SDK requires JDK 17 or newer
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
@@ -28,8 +29,18 @@ repositories {
     mavenCentral()
 }
 
+
+val meiliVersion: String = "0.20.1"
+val coroutinesVersion: String = "1.9.0"
+
 dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
+    implementation("com.meilisearch.sdk:meilisearch-java:$meiliVersion")
+
+
     testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 }
 
 
