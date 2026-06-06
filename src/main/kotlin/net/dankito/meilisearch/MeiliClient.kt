@@ -111,6 +111,24 @@ open class MeiliClient(
     }
 
 
+    suspend fun updateDocuments(indexName: String, documents: Collection<Any>, primaryKey: String? = null, batchSize: Int? = null): TaskResult {
+        if (documents.isEmpty()) {
+            return TaskFailure(-1, null, "No documents to update")
+        }
+
+        val index = client.index(indexName)
+        val documentsJson = objectMapper.writeValueAsString(documents)
+
+        return if (batchSize != null) {
+            val taskInfos = index.updateDocumentsInBatches(documentsJson, batchSize, primaryKey)
+            val results = taskInfos.map { waitForTask(it) }
+            results.firstOrNull { it is TaskFailure } ?: results.last()
+        } else {
+            waitForTask(index.updateDocuments(documentsJson, primaryKey))
+        }
+    }
+
+
     suspend fun waitForTask(taskInfo: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 200) =
         waitForTask(taskInfo.taskUid, timeoutMs, intervalMs)
 
