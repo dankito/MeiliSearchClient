@@ -157,7 +157,7 @@ open class MeiliClient(
             val task = client.getTask(taskUid)
             when (task.status) {
                 TaskStatus.SUCCEEDED -> return TaskSuccess(taskUid, task)
-                TaskStatus.FAILED    -> return TaskFailure(taskUid, task, "Meilisearch task $taskUid failed: ${task.error?.type} ${task.error?.code} (${task.error?.link}): ${task.error?.message}")
+                TaskStatus.FAILED    -> return TaskFailure(taskUid, task, "Meilisearch task $taskUid failed: ${formatError(task)}")
                 TaskStatus.CANCELED  -> return TaskFailure(taskUid, task, "Meilisearch task $taskUid was canceled")
                 else                 -> delay(interval)
             }
@@ -178,5 +178,10 @@ open class MeiliClient(
         }
 
     }
+
+
+    open fun formatError(task: Task): String = task.error?.let { error ->
+        "${error.type} ${error.code} ${error.message}${error.link.takeUnless { it.isNullOrBlank() }?.let { " (${it})" } ?: ""}"
+    } ?: "<error not set>"
 
 }
