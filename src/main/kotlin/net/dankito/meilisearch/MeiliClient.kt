@@ -139,6 +139,18 @@ open class MeiliClient(
     }
 
 
+    open suspend fun index(indexName: String, document: Any): TaskResult {
+        val documentJson = objectMapper.writeValueAsString(document)
+
+        val taskInfo = indexDocumentsJson(indexName, "[$documentJson]")
+
+        return waitForTask(taskInfo.taskUid)
+    }
+
+    protected open suspend fun indexDocumentsJson(indexName: String, documentsJson: String): TaskResult =
+        waitForTask(client.index(indexName).addDocuments(documentsJson))
+
+
     suspend fun updateDocuments(indexName: String, documents: Collection<Any>, primaryKey: String? = null, batchSize: Int? = null): TaskResult {
         if (documents.isEmpty()) {
             return TaskFailure(-1, null, "No documents to update")
