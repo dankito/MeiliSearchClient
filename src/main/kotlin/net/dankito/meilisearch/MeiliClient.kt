@@ -162,10 +162,10 @@ open class MeiliClient(
     }
 
 
-    suspend fun waitForTask(taskInfo: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 200) =
+    suspend fun waitForTask(taskInfo: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 25) =
         waitForTask(taskInfo.taskUid, timeoutMs, intervalMs)
 
-    suspend fun waitForTask(taskUid: Int, timeoutMs: Long = 60_000, intervalMs: Long = 200): TaskResult {
+    suspend fun waitForTask(taskUid: Int, timeoutMs: Long = 60_000, intervalMs: Long = 25): TaskResult {
         val deadline = System.currentTimeMillis() + timeoutMs
         val interval = intervalMs.milliseconds
 
@@ -182,10 +182,10 @@ open class MeiliClient(
         return TaskFailure(taskUid, null, "Meilisearch task $taskUid timed out after ${timeoutMs}ms")
     }
 
-    suspend fun waitForTaskSuccessOrThrow(task: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 200) =
+    suspend fun waitForTaskSuccessOrThrow(task: TaskInfo, timeoutMs: Long = 60_000, intervalMs: Long = 25) =
         waitForTaskSuccessOrThrow(task.taskUid, timeoutMs, intervalMs)
 
-    suspend fun waitForTaskSuccessOrThrow(taskUid: Int, timeoutMs: Long = 60_000, intervalMs: Long = 200): Task {
+    suspend fun waitForTaskSuccessOrThrow(taskUid: Int, timeoutMs: Long = 60_000, intervalMs: Long = 25): Task {
         val taskResult = waitForTask(taskUid, timeoutMs, intervalMs)
 
         when (taskResult) {
