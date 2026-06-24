@@ -148,10 +148,13 @@ open class MeiliClient(
     }
 
 
-    open suspend fun index(indexName: String, document: Any): TaskResult {
-        val documentJson = objectMapper.writeValueAsString(document)
+    open suspend fun index(indexName: String, document: Any): TaskResult =
+        index(indexName, listOf(document))
 
-        val taskInfo = indexDocumentsJson(indexName, "[$documentJson]")
+    open suspend fun index(indexName: String, documents: List<Any>): TaskResult {
+        val documentJson = objectMapper.writeValueAsString(documents)
+
+        val taskInfo = indexDocumentsJson(indexName, documentJson)
 
         return waitForTask(taskInfo.taskUid)
     }
