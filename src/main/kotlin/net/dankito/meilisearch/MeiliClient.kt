@@ -2,6 +2,7 @@ package net.dankito.meilisearch
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.meilisearch.sdk.Client
 import com.meilisearch.sdk.Config
@@ -24,6 +25,9 @@ open class MeiliClient(
     meiliApiKey: String? = null,
     protected val objectMapper: ObjectMapper = ObjectMapper().apply {
         registerKotlinModule()
+        registerModules(
+            JavaTimeModule()
+        )
         findAndRegisterModules()
 
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
