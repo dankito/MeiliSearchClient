@@ -8,7 +8,7 @@ plugins {
 group = "net.dankito.meilisearch"
 version = "1.0.0-SNAPSHOT"
 
-ext["customArtifactId"] = "MeiliSearchClient"
+ext["customArtifactId"] = "meilisearch-client"
 
 ext["sourceCodeRepositoryBaseUrl"] = "github.com/dankito/MeiliSearchClient"
 
