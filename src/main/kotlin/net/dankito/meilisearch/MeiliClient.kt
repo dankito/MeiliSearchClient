@@ -47,6 +47,12 @@ open class MeiliClient(
     ): TaskResult {
         val index = client.index(indexName)
 
+        if (primaryKey != null && index.primaryKey == null) {
+            // Error message if index already exists:
+            // Meilisearch task 27801 failed: invalid_request index_already_exists (https://docs.meilisearch.com/errors#index_already_exists): Index `WebPageParser_DiscoveredPages` already exists.
+            val createResult = waitForTask(client.createIndex(indexName, primaryKey))
+        }
+
         val settings = Settings()
 
         // Welche Felder gehen in die Volltext-Suche (Ranking nach Reihenfolge)
