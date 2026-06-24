@@ -6,6 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.meilisearch.sdk.Client
 import com.meilisearch.sdk.Config
 import com.meilisearch.sdk.model.DocumentsQuery
+import com.meilisearch.sdk.model.Settings
 import com.meilisearch.sdk.model.Task
 import com.meilisearch.sdk.model.TaskInfo
 import com.meilisearch.sdk.model.TaskStatus
@@ -31,29 +32,25 @@ open class MeiliClient(
     internal val client = Client(Config(meiliHost, meiliApiKey))
 
 
-    suspend fun configureIndex(indexName: String, searchableAttributes: Collection<String> = emptyList(), // Welche Felder gehen in die Volltext-Suche (Ranking nach Reihenfolge)
-                               filterableAttributes: Collection<String> = emptyList(), // Welche Felder dürfen gefiltert/gefacettiert werden
-                               sortableAttributes: Collection<String> = emptyList(), // Welche Felder können sortiert werden
-    ) {
+    suspend fun configureIndex(indexName: String, primaryKey: String? = null,
+                               searchableAttributes: Collection<String>? = null, // Welche Felder gehen in die Volltext-Suche (Ranking nach Reihenfolge)
+                               filterableAttributes: Collection<String>? = null, // Welche Felder dürfen gefiltert/gefacettiert werden
+                               sortableAttributes: Collection<String>? = null, // Welche Felder können sortiert werden
+                               displayedAttributes: List<String>? = null,   // which attributes are returned from index in case not specified otherwise, null = all
+                               rankingRules: List<String>? = null,          // null = Meili defaults
+    ): TaskResult {
         val index = client.index(indexName)
 
-        // Welche Felder dürfen gefiltert/gefacettiert werden
-        if (filterableAttributes.isNotEmpty()) {
-            val taskInfo = index.updateFilterableAttributesSettings(filterableAttributes.toTypedArray())
-            val task = waitForTaskSuccessOrThrow(taskInfo)
-        }
-
-        // Welche Felder können sortiert werden
-        if (sortableAttributes.isNotEmpty()) {
-            val taskInfo = index.updateSortableAttributesSettings(sortableAttributes.toTypedArray())
-            waitForTaskSuccessOrThrow(taskInfo)
-        }
+        val settings = Settings()
 
         // Welche Felder gehen in die Volltext-Suche (Ranking nach Reihenfolge)
-        if (searchableAttributes.isNotEmpty()) {
-            val taskInfo = index.updateSearchableAttributesSettings(searchableAttributes.toTypedArray())
-            waitForTaskSuccessOrThrow(taskInfo)
-        }
+        searchableAttributes?.let { settings.searchableAttributes = it.toTypedArray() }
+        // Welche Felder dürfen gefiltert/gefacettiert werden
+        filterableAttributes?.let { settings.filterableAttributes = it.toTypedArray() }
+        // Welche Felder können sortiert werden
+        sortableAttributes?.let { settings.sortableAttributes = it.toTypedArray() }
+        displayedAttributes?.let { settings.displayedAttributes = it.toTypedArray() }
+        rankingRules?.let { settings.rankingRules = it.toTypedArray() }
 
 
 //        val embedderSettings = mapOf(
@@ -66,6 +63,10 @@ open class MeiliClient(
 //        )
 //        // Per REST da das Java-SDK Embedder noch nicht vollständig unterstützt:
 //        index.rawSearch("""{"embedders": ${objectMapper.writeValueAsString(embedderSettings)}}""")
+
+
+        val settingsTask = index.updateSettings(settings)
+        return waitForTask(settingsTask.taskUid)
     }
 
 
