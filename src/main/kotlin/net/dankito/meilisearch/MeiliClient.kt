@@ -29,7 +29,7 @@ open class MeiliClient(
     }
 ) {
 
-    internal val client = Client(Config(meiliHost, meiliApiKey))
+    val client = Client(Config(meiliHost, meiliApiKey))
 
 
     suspend fun configureIndex(indexName: String, primaryKey: String? = null,
