@@ -206,4 +206,8 @@ open class MeiliClient(
         "${error.type} ${error.code} ${error.message}${error.link.takeUnless { it.isNullOrBlank() }?.let { " (${it})" } ?: ""}"
     } ?: "<error not set>"
 
+    open fun isNotFoundError(e: Throwable): Boolean =
+        e.message?.contains("document_not_found") == true ||
+                e.message?.contains("404") == true
+
 }
