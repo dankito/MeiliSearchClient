@@ -102,8 +102,9 @@ open class MeiliClient(
             }
         }
 
-    open fun getDocumentJson(indexName: String, id: String): String? =
-        getDocument(indexName, id)
+    open fun getDocumentJson(indexName: String, id: String, fieldsToReturn: Collection<String>? = null): String? =
+        getDocument(indexName, id, fieldsToReturn)
+
 
     inline fun <reified T : Any> getAllDocuments(indexName: String, fieldsToReturn: Collection<String> = emptyList(),
                                   filter: Collection<String> = emptyList()): List<T> =
