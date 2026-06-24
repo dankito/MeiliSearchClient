@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.meilisearch.sdk.Client
 import com.meilisearch.sdk.Config
+import com.meilisearch.sdk.model.DocumentQuery
 import com.meilisearch.sdk.model.DocumentsQuery
 import com.meilisearch.sdk.model.Settings
 import com.meilisearch.sdk.model.Task
@@ -83,9 +84,16 @@ open class MeiliClient(
 
 
 
-    inline fun <reified T> getDocument(indexName: String, id: String): T? =
+    inline fun <reified T> getDocument(indexName: String, id: String, fieldsToReturn: Collection<String>? = null): T? =
         try {
-            client.index(indexName).getDocument(id, T::class.java)
+            val index = client.index(indexName)
+
+            if (fieldsToReturn.isNullOrEmpty()) {
+                index.getDocument(id, T::class.java)
+            } else {
+                val query = DocumentQuery().apply { setFields(fieldsToReturn.toTypedArray()) }
+                index.getDocument(id, query, T::class.java)
+            }
         } catch (e: Exception) {
             if (isNotFoundError(e)) {
                 null
