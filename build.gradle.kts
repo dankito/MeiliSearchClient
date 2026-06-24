@@ -44,7 +44,7 @@ val coroutinesVersion: String = "1.9.0"
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    implementation("com.meilisearch.sdk:meilisearch-java:$meiliVersion")
+    api("com.meilisearch.sdk:meilisearch-java:$meiliVersion")
 
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
