@@ -8,6 +8,10 @@ sealed class TaskResult(
     val isSuccess: Boolean
 )
 
-class TaskSuccess(taskUid: Int, task: Task) : TaskResult(taskUid, task, true)
+class TaskSuccess(taskUid: Int, task: Task) : TaskResult(taskUid, task, true) {
+    override fun toString() = "Task $taskUid succeeded"
+}
 
-class TaskFailure(taskUid: Int, task: Task?, val error: String) : TaskResult(taskUid, task, false)
+class TaskFailure(taskUid: Int, task: Task?, val error: String) : TaskResult(taskUid, task, false) {
+    override fun toString() = "Task $taskUid failed: $error"
+}
