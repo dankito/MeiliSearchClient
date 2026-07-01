@@ -111,13 +111,13 @@ open class MeiliClient(
 
 
     inline fun <reified T : Any> getAllDocuments(indexName: String, fieldsToReturn: Collection<String> = emptyList(),
-                                  filter: Collection<String> = emptyList()): List<T> =
-        getAllDocuments(indexName, T::class, fieldsToReturn, filter)
+                                  filter: Collection<String> = emptyList(), limit: Int? = null): List<T> =
+        getAllDocuments(indexName, T::class, fieldsToReturn, filter, limit)
 
     open fun <T : Any> getAllDocuments(indexName: String, resultClass: KClass<T>, fieldsToReturn: Collection<String> = emptyList(),
-                                  filter: Collection<String> = emptyList()): List<T> {
+                                  filter: Collection<String> = emptyList(), limit: Int? = null): List<T> {
         var page = 0
-        val batchSize = 1000
+        val batchSize = limit ?: 1000
         val result = mutableListOf<T>()
 
         var batch = getDocuments(indexName, resultClass, page * batchSize, batchSize, fieldsToReturn, filter)
