@@ -13,6 +13,8 @@ import com.meilisearch.sdk.model.Task
 import com.meilisearch.sdk.model.TaskInfo
 import com.meilisearch.sdk.model.TaskStatus
 import kotlinx.coroutines.delay
+import net.dankito.meilisearch.model.DeleteDocumentResult
+import net.dankito.meilisearch.model.DeleteDocumentResultType
 import net.dankito.meilisearch.model.SearchResults
 import net.dankito.meilisearch.model.TaskFailure
 import net.dankito.meilisearch.model.TaskResult
@@ -185,9 +187,21 @@ open class MeiliClient(
     }
 
 
-    suspend fun deleteDocument(indexName: String, documentId: String): TaskResult {
+    suspend fun deleteDocument(indexName: String, documentId: String): DeleteDocumentResult {
         val taskInfo = client.index(indexName).deleteDocument(documentId)
-        return waitForTask(taskInfo)
+        val taskResult = waitForTask(taskInfo)
+
+        val details = taskResult.task?.details
+        val hasBeenDeleted = details?.deletedDocuments == 1
+        val type = if (hasBeenDeleted) {
+            DeleteDocumentResultType.Deleted
+        } else if (taskResult is TaskFailure) {
+            DeleteDocumentResultType.Error
+        } else {
+            DeleteDocumentResultType.NotFound
+        }
+
+        return DeleteDocumentResult(type, taskResult, (taskResult as? TaskFailure)?.error)
     }
 
 
